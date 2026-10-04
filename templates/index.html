@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Autonomous AI Trading Signal Agent | Ethereum Sepolia</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Ethers.js library for direct Web3 / MetaMask interactions -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
+</head>
+<body>
+  <div class="background-glow glow-1"></div>
+  <div class="background-glow glow-2"></div>
+
+  <!-- Header / Navigation -->
+  <header class="header">
+    <div class="header-container">
+      <div class="logo-group">
+        <div class="logo-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+            <polyline points="16 7 22 7 22 13"></polyline>
+          </svg>
+        </div>
+        <div>
+          <h1 class="logo-title">AI SIGNAL AGENT</h1>
+          <span class="logo-subtitle">Sepolia Testnet &bull; CoinGecko &bull; LLM Engine</span>
+        </div>
+      </div>
+
+      <!-- Network and MetaMask Controls -->
+      <div class="nav-controls">
+        <div class="network-badge" id="networkBadge">
+          <span class="status-dot"></span>
+          <span id="networkName">Sepolia (11155111)</span>
+        </div>
+        <button id="connectWalletBtn" class="btn btn-wallet">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
+            <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
+            <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
+          </svg>
+          <span id="walletBtnText">Connect MetaMask</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-container">
+
+    <!-- Top Notification Banner (Contract status / Network warning) -->
+    <div id="alertBanner" class="alert-banner hidden"></div>
+
+    <!-- Contract Info Bar -->
+    <div class="contract-bar card">
+      <div class="contract-info">
+        <span class="label">CONTRACT ON SEPOLIA:</span>
+        <span class="address" id="contractAddressDisplay">Loading contract...</span>
+        <button class="btn-icon" id="copyAddressBtn" title="Copy Address">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+        </button>
+        <a id="contractEtherscanLink" href="#" target="_blank" class="btn-link" title="View on Etherscan">
+          <span>Etherscan</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+        </a>
+      </div>
+      <div class="system-pills">
+        <span class="pill" id="llmEnginePill">LLM: Initializing...</span>
+        <span class="pill" id="totalSignalsPill">Signals: 0</span>
+      </div>
+    </div>
+
+    <!-- Market Overview & Agent Execution Grid -->
+    <div class="grid grid-2">
+      <!-- Live Market Feed Card -->
+      <div class="card market-card">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="eth-icon">Ξ</span>
+            <h2>ETH / USD Live Market Data</h2>
+          </div>
+          <span class="badge badge-source" id="priceSourceBadge">CoinGecko API</span>
+        </div>
+
+        <div class="market-price-container">
+          <div class="current-price" id="ethPriceDisplay">$0.00</div>
+          <div class="price-change-pill" id="ethChangePill">0.00%</div>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-box">
+            <span class="metric-label">24H TRADING VOLUME</span>
+            <span class="metric-value" id="ethVolumeDisplay">--</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-label">FEED STATUS</span>
+            <span class="metric-value text-success" id="feedStatusDisplay">Active &bull; Live</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-label">LAST FEED UPDATE</span>
+            <span class="metric-value" id="lastUpdatedDisplay">Just now</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trigger AI Agent Card -->
+      <div class="card agent-card">
+        <div class="card-header">
+          <div class="card-title">
+            <div class="ai-sparkle">✨</div>
+            <h2>AI Trading Signal Agent</h2>
+          </div>
+          <span class="badge badge-active">Autonomous</span>
+        </div>
+
+        <p class="agent-description">
+          The agent queries CoinGecko for live ETH price action, runs algorithmic &amp; LLM reasoning to evaluate momentum, then signs and publishes the immutable decision directly to Sepolia.
+        </p>
+
+        <!-- Stepper Visualizer -->
+        <div class="agent-stepper" id="agentStepper">
+          <div class="step-item" id="step1">
+            <span class="step-num">1</span>
+            <span class="step-label">CoinGecko Price</span>
+          </div>
+          <div class="step-arrow">&rarr;</div>
+          <div class="step-item" id="step2">
+            <span class="step-num">2</span>
+            <span class="step-label">LLM Analysis</span>
+          </div>
+          <div class="step-arrow">&rarr;</div>
+          <div class="step-item" id="step3">
+            <span class="step-num">3</span>
+            <span class="step-label">Sepolia On-Chain</span>
+          </div>
+        </div>
+
+        <!-- Action Button & Status -->
+        <div class="action-container">
+          <button id="triggerAgentBtn" class="btn btn-primary btn-large">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span id="triggerBtnText">Trigger AI Agent</span>
+          </button>
+        </div>
+
+        <div id="triggerStatusBox" class="status-box hidden">
+          <div class="status-spinner"></div>
+          <span id="statusMessage">Executing agent pipeline...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Latest On-Chain Decision Banner / Hero -->
+    <div class="card latest-signal-card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+          </svg>
+          <h2>Latest Decision On-Chain (Sepolia)</h2>
+        </div>
+        <button id="refreshSignalsBtn" class="btn btn-secondary btn-sm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+          Refresh On-Chain
+        </button>
+      </div>
+
+      <div id="latestSignalContent">
+        <div class="empty-state">
+          <p>No signal recorded yet. Click <strong>Trigger AI Agent</strong> to query LLM and record on Sepolia!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Historical Signals Table -->
+    <div class="card history-card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <h2>On-Chain Signal History</h2>
+        </div>
+        <span class="subtext" id="historyCountText">Showing recent decisions</span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="signals-table">
+          <thead>
+            <tr>
+              <th>#ID</th>
+              <th>Asset</th>
+              <th>Action</th>
+              <th>Signal Price</th>
+              <th>LLM Rationale</th>
+              <th>Timestamp</th>
+              <th>Reporter</th>
+            </tr>
+          </thead>
+          <tbody id="signalsTableBody">
+            <tr>
+              <td colspan="7" class="text-center text-muted">Awaiting signals from Sepolia contract...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>AI Trading Signal Agent Demo &bull; Deployed on Ethereum Sepolia Testnet &bull; Powered by CoinGecko, LLMs &amp; Web3.py</p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "ai-trading-signal-agent",
+  "version": "1.0.0",
+  "description": "AI Trading Signal Agent with Solidity contract on Sepolia, Python Agent, and Flask Frontend",
+  "main": "compile.js",
+  "scripts": {
+    "compile": "node compile.js"
+  },
+  "devDependencies": {
+    "solc": "^0.8.20"
+  }
+}
